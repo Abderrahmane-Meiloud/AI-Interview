@@ -1,0 +1,192 @@
+{
+  "info": {
+    "name": "AI Interview Coach API",
+    "description": "API collection for testing the Interview Coach backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" },
+    { "key": "interviewId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resume",
+      "item": [
+        {
+          "name": "Upload Resume",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "resume", "type": "file", "src": "" }]
+            },
+            "url": "{{baseUrl}}/resume/upload"
+          }
+        },
+        {
+          "name": "Get Resume",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/resume"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Job Profile",
+      "item": [
+        {
+          "name": "Create Job Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobRole\": \"Full Stack Developer\",\n  \"experienceLevel\": \"Fresher\",\n  \"expectedPackage\": \"₹10 LPA\"\n}"
+            },
+            "url": "{{baseUrl}}/job-profile"
+          }
+        },
+        {
+          "name": "Get Job Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/job-profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Interview",
+      "item": [
+        {
+          "name": "Start Interview",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/interview/start"
+          }
+        },
+        {
+          "name": "Get Current Question",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/interview/{{interviewId}}/current"
+          }
+        },
+        {
+          "name": "Submit Answer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answer\": \"useState manages component state while useEffect handles side effects after render.\"\n}"
+            },
+            "url": "{{baseUrl}}/interview/{{interviewId}}/answer"
+          }
+        },
+        {
+          "name": "Complete Interview",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/interview/{{interviewId}}/complete"
+          }
+        },
+        {
+          "name": "Get History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/interview/history"
+          }
+        },
+        {
+          "name": "Get Interview By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/interview/{{interviewId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/dashboard"
+          }
+        },
+        {
+          "name": "Get Progress",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/dashboard/progress"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    }
+  ]
+}

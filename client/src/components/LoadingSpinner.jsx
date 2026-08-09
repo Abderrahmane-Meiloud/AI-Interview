@@ -1,3 +1,6 @@
+import React from 'react';
+
+
 const LoadingSpinner = ({ fullScreen = false, size = 'md' }) => {
   const sizes = {
     sm: 'h-5 w-5',

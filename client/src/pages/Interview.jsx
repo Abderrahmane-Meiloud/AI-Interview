@@ -4,6 +4,8 @@ import toast from 'react-hot-toast';
 import { interviewAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProgressBar from '../components/ProgressBar';
+import React from 'react';
+
 
 const categoryLabels = {
   technical: 'Technical',

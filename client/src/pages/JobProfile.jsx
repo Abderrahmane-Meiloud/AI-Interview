@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { jobProfileAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import React from 'react';
+
 
 const experienceLevels = ['Fresher', 'Junior', 'Mid-Level', 'Senior', 'Lead'];
 

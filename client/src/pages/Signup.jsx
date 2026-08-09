@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import React from 'react';
 import { MailIcon, LockIcon, UserIcon, EyeIcon, EyeOffIcon, SparklesIcon, RobotIcon, ArrowRightIcon, SpinnerIcon, CheckIcon } from '../components/Icons';
 
 const Signup = () => {

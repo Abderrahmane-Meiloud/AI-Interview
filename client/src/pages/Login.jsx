@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import React from 'react';
 import { MailIcon, LockIcon, EyeIcon, EyeOffIcon, SparklesIcon, RobotIcon, ArrowRightIcon, SpinnerIcon, ShieldCheckIcon } from '../components/Icons';
 
 const Login = () => {

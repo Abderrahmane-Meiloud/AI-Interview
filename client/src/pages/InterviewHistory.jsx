@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { interviewAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
+import React from 'react';
+
 
 const InterviewHistory = () => {
   const [interviews, setInterviews] = useState([]);

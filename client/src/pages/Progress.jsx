@@ -14,6 +14,8 @@ import { dashboardAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import ScoreCard from '../components/ScoreCard';
+import React from 'react';
+
 
 const Progress = () => {
   const [data, setData] = useState(null);

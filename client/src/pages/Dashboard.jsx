@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import toast from 'react-hot-toast';
 import { dashboardAPI, interviewAPI } from '../services/api';
 import { DashboardSkeleton } from '../components/Skeleton';

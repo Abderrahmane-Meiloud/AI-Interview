@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { interviewAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProgressBar from '../components/ProgressBar';
+import React from 'react';
+
 
 const InterviewDetail = () => {
   const { id } = useParams();

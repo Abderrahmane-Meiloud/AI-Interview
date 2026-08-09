@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { resumeAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import React from 'react';
+
 
 const ResumeUpload = () => {
   const [resume, setResume] = useState(null);

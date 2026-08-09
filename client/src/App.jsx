@@ -12,6 +12,8 @@ import InterviewResult from './pages/InterviewResult';
 import InterviewHistory from './pages/InterviewHistory';
 import InterviewDetail from './pages/InterviewDetail';
 import Progress from './pages/Progress';
+import React from 'react';
+
 
 function App() {
   return (

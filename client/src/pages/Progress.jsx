@@ -15,7 +15,13 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import EmptyState from '../components/EmptyState';
 import ScoreCard from '../components/ScoreCard';
 import React from 'react';
+import { TrendingUpIcon, CalendarIcon } from '../components/Icons';
 
+const scoreColor = (score) => {
+  if (score >= 70) return 'text-success-600';
+  if (score >= 50) return 'text-warning-500';
+  return 'text-danger-500';
+};
 
 const Progress = () => {
   const [data, setData] = useState(null);
@@ -42,7 +48,7 @@ const Progress = () => {
   if (!data?.interviews?.length) {
     return (
       <EmptyState
-        icon="📈"
+        icon={<TrendingUpIcon className="w-9 h-9 text-ink-faint" />}
         title="No Progress Data"
         description="Complete at least one interview to track your progress."
         action={
@@ -67,8 +73,8 @@ const Progress = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Progress Tracking</h1>
-        <p className="text-gray-500 mt-1">See how your interview scores improve over time</p>
+        <h1 className="font-display text-2xl font-semibold text-ink">Progress Tracking</h1>
+        <p className="text-sm text-ink-soft mt-1">See how your interview scores improve over time</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -83,65 +89,58 @@ const Progress = () => {
       </div>
 
       <div className="card">
-        <h2 className="text-lg font-semibold mb-4">Overall Score Trend</h2>
+        <h2 className="text-base font-semibold text-ink mb-4">Overall Score Trend</h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" fontSize={12} />
-            <YAxis domain={[0, 100]} fontSize={12} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="Overall" stroke="#2563eb" strokeWidth={2} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#DDE5DF" />
+            <XAxis dataKey="name" fontSize={12} stroke="#8B978F" tick={{ fill: '#647067' }} />
+            <YAxis domain={[0, 100]} fontSize={12} stroke="#8B978F" tick={{ fill: '#647067' }} />
+            <Tooltip contentStyle={{ borderRadius: 8, borderColor: '#DDE5DF', fontSize: 13 }} />
+            <Legend wrapperStyle={{ fontSize: 13 }} />
+            <Line type="monotone" dataKey="Overall" stroke="#166534" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       <div className="card">
-        <h2 className="text-lg font-semibold mb-4">Category Breakdown</h2>
+        <h2 className="text-base font-semibold text-ink mb-4">Category Breakdown</h2>
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" fontSize={12} />
-            <YAxis domain={[0, 100]} fontSize={12} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="Technical" stroke="#3b82f6" />
-            <Line type="monotone" dataKey="DSA" stroke="#8b5cf6" />
-            <Line type="monotone" dataKey="Communication" stroke="#10b981" />
-            <Line type="monotone" dataKey="Problem Solving" stroke="#f59e0b" />
-            <Line type="monotone" dataKey="Resume" stroke="#ef4444" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#DDE5DF" />
+            <XAxis dataKey="name" fontSize={12} stroke="#8B978F" tick={{ fill: '#647067' }} />
+            <YAxis domain={[0, 100]} fontSize={12} stroke="#8B978F" tick={{ fill: '#647067' }} />
+            <Tooltip contentStyle={{ borderRadius: 8, borderColor: '#DDE5DF', fontSize: 13 }} />
+            <Legend wrapperStyle={{ fontSize: 13 }} />
+            <Line type="monotone" dataKey="Technical" stroke="#166534" strokeWidth={2} />
+            <Line type="monotone" dataKey="DSA" stroke="#15803D" strokeWidth={2} />
+            <Line type="monotone" dataKey="Communication" stroke="#22A85F" strokeWidth={2} />
+            <Line type="monotone" dataKey="Problem Solving" stroke="#92660A" strokeWidth={2} />
+            <Line type="monotone" dataKey="Resume" stroke="#B23A3A" strokeWidth={2} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       <div className="card">
-        <h2 className="text-lg font-semibold mb-4">Interview Timeline</h2>
-        <div className="space-y-3">
+        <h2 className="text-base font-semibold text-ink mb-4">Interview Timeline</h2>
+        <div className="space-y-2">
           {data.interviews.map((item) => (
             <div
               key={item.interview}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              className="flex items-center justify-between p-3.5 bg-app rounded-lg border border-line"
             >
               <div>
-                <p className="font-medium">Interview {item.interview}</p>
-                <p className="text-xs text-gray-500">{item.jobRole}</p>
+                <p className="font-medium text-sm text-ink">Interview {item.interview}</p>
+                <p className="text-xs text-ink-faint mt-0.5">{item.jobRole}</p>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-500">
+                <span className="flex items-center gap-1.5 text-xs text-ink-faint">
+                  <CalendarIcon className="w-3.5 h-3.5" />
                   {new Date(item.date).toLocaleDateString('en-IN', {
                     day: '2-digit',
                     month: 'short',
                   })}
                 </span>
-                <span
-                  className={`font-bold ${
-                    item.overall >= 70
-                      ? 'text-green-600'
-                      : item.overall >= 50
-                        ? 'text-yellow-600'
-                        : 'text-red-600'
-                  }`}
-                >
+                <span className={`font-display font-semibold ${scoreColor(item.overall)}`}>
                   {item.overall}%
                 </span>
               </div>

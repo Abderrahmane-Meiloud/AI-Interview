@@ -25,7 +25,6 @@ app.get('/', (req, res) => {
   res.json({
     status: 'online',
     message: 'Interview Coach Backend API is running successfully!',
-    frontendUrl: 'http://localhost:5173',
     docs: {
       health: '/api/health',
       auth: '/api/auth',

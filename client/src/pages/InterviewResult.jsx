@@ -4,7 +4,7 @@ import { interviewAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProgressBar from '../components/ProgressBar';
 import React from 'react';
-
+import { CheckCircleIcon, AlertTriangleIcon } from '../components/Icons';
 
 const InterviewResult = () => {
   const { id } = useParams();
@@ -29,7 +29,7 @@ const InterviewResult = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-app">
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -45,25 +45,25 @@ const InterviewResult = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="min-h-screen bg-app py-8 px-4">
+      <div className="max-w-4xl mx-auto space-y-5">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Interview Result</h1>
-          <p className="text-gray-500 mt-2">
+          <h1 className="font-display text-3xl font-semibold text-ink">Interview Result</h1>
+          <p className="text-sm text-ink-soft mt-2">
             {interview.jobRole} — {interview.package}
           </p>
         </div>
 
         <div className="card text-center py-8">
-          <p className="text-sm text-gray-500 uppercase tracking-wide">Overall Score</p>
-          <p className="text-6xl font-bold text-primary-600 mt-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">Overall Score</p>
+          <p className="font-display text-6xl font-semibold text-primary-700 mt-2">
             {interview.score}
-            <span className="text-2xl text-gray-400">/100</span>
+            <span className="text-2xl text-ink-faint">/100</span>
           </p>
         </div>
 
         <div className="card space-y-4">
-          <h2 className="text-lg font-semibold">Category Breakdown</h2>
+          <h2 className="text-base font-semibold text-ink">Category Breakdown</h2>
           {scores.map((s) => (
             <ProgressBar
               key={s.label}
@@ -76,12 +76,12 @@ const InterviewResult = () => {
 
         {interview.strengths?.length > 0 && (
           <div className="card">
-            <h2 className="text-lg font-semibold mb-3">Strengths</h2>
+            <h2 className="text-base font-semibold text-ink mb-3">Strengths</h2>
             <ul className="space-y-2">
               {interview.strengths.map((s, i) => (
-                <li key={i} className="flex items-start gap-2 text-gray-700">
-                  <span className="text-green-500 mt-0.5">✓</span>
-                  {s}
+                <li key={i} className="flex items-start gap-2 text-sm text-ink-soft">
+                  <CheckCircleIcon className="w-4 h-4 text-success-600 flex-shrink-0 mt-0.5" />
+                  <span>{s}</span>
                 </li>
               ))}
             </ul>
@@ -90,14 +90,15 @@ const InterviewResult = () => {
 
         {interview.improvements?.length > 0 && (
           <div className="card">
-            <h2 className="text-lg font-semibold mb-3">Areas to Improve</h2>
+            <h2 className="text-base font-semibold text-ink mb-3">Areas to Improve</h2>
             <div className="space-y-4">
               {interview.improvements.map((imp, i) => (
-                <div key={i}>
-                  <p className="font-medium text-gray-900 flex items-center gap-2">
-                    <span className="text-yellow-500">⚠</span> {imp.area}
-                  </p>
-                  <p className="text-sm text-gray-600 ml-6 mt-1">{imp.description}</p>
+                <div key={i} className="flex items-start gap-2">
+                  <AlertTriangleIcon className="w-4 h-4 text-warning-500 flex-shrink-0 mt-1" />
+                  <div>
+                    <p className="font-medium text-sm text-ink">{imp.area}</p>
+                    <p className="text-sm text-ink-soft mt-0.5">{imp.description}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -106,28 +107,31 @@ const InterviewResult = () => {
 
         {interview.feedback && (
           <div className="card">
-            <h2 className="text-lg font-semibold mb-2">Overall Feedback</h2>
-            <p className="text-gray-700">{interview.feedback}</p>
+            <h2 className="text-base font-semibold text-ink mb-2">Overall Feedback</h2>
+            <p className="text-sm text-ink-soft">{interview.feedback}</p>
           </div>
         )}
 
         {interview.improvementPlan?.dailyPlan?.length > 0 && (
           <div className="card">
-            <h2 className="text-lg font-semibold mb-2">7-Day Improvement Plan</h2>
+            <h2 className="text-base font-semibold text-ink mb-2">7-Day Improvement Plan</h2>
             {interview.improvementPlan.topAreas?.length > 0 && (
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-ink-soft mb-4">
                 Focus areas: {interview.improvementPlan.topAreas.join(', ')}
               </p>
             )}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {interview.improvementPlan.dailyPlan.map((day) => (
-                <div key={day.day} className="p-4 bg-gray-50 rounded-lg">
-                  <p className="font-medium text-primary-700">Day {day.day}</p>
-                  <p className="text-gray-900 mt-1">{day.topic}</p>
+                <div key={day.day} className="p-4 bg-app rounded-lg border border-line">
+                  <p className="font-mono text-xs font-semibold text-primary-700 uppercase tracking-wide">Day {day.day}</p>
+                  <p className="text-sm font-medium text-ink mt-1">{day.topic}</p>
                   {day.activities?.length > 0 && (
-                    <ul className="text-sm text-gray-600 mt-2 space-y-1">
+                    <ul className="text-sm text-ink-soft mt-2 space-y-1">
                       {day.activities.map((act, i) => (
-                        <li key={i}>• {act}</li>
+                        <li key={i} className="flex items-start gap-1.5">
+                          <span className="text-ink-faint">•</span>
+                          <span>{act}</span>
+                        </li>
                       ))}
                     </ul>
                   )}
@@ -137,7 +141,7 @@ const InterviewResult = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-3 justify-center">
+        <div className="flex flex-wrap gap-3 justify-center pt-2">
           <button onClick={() => navigate('/dashboard')} className="btn-primary px-8 py-3">
             Back to Dashboard
           </button>

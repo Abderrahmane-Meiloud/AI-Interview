@@ -20,7 +20,11 @@ export const parseAIJSON = (text) => {
     const arrayStart = cleaned.indexOf('[');
     const arrayEnd = cleaned.lastIndexOf(']');
     if (arrayStart !== -1 && arrayEnd !== -1) {
-      return JSON.parse(cleaned.slice(arrayStart, arrayEnd + 1));
+      try {
+        return JSON.parse(cleaned.slice(arrayStart, arrayEnd + 1));
+      } catch {
+        throw new Error('Failed to parse AI JSON response');
+      }
     }
     throw new Error('Failed to parse AI JSON response');
   }

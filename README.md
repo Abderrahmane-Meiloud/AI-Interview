@@ -43,7 +43,7 @@ The platform analyzes a user's resume, target job role, experience level, and ex
 - bcrypt
 
 ### AI
-- Gemini API
+- OpenAI API
 
 ## 🔄 Application Flow
 
@@ -100,10 +100,10 @@ npm run install:all
 
 Create a .env file inside the server directory:
 
-PORT=5000
+PORT=5001
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
-GEMINI_API_KEY=your_gemini_api_key
+OPENAI_API_KEY=your_openai_api_key
 ▶️ Run the Project
 Backend
 cd server

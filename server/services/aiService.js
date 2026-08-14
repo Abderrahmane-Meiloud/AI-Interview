@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { parseAIJSON } from '../utils/parseJSON.js';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -8,21 +8,112 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
 
-const getModel = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-    throw new Error('Gemini API key is not configured. Please set GEMINI_API_KEY in server/.env');
-  }
-  const genAI = new GoogleGenerativeAI(apiKey);
-  return genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+// Configurable via env for future model migrations without a code change;
+// defaults to the model this project has been built and tested against.
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
+// User-safe error: carries a generic message for the client while preserving
+// the original error (with full OpenAI/internal detail) for server logs only.
+export class AIServiceError extends Error {
+  constructor(message, { cause } = {}) {
+    super(message);
+    this.name = 'AIServiceError';
+    this.isAIServiceError = true;
+    if (cause) this.cause = cause;
+  }
+}
+
+const getClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey || apiKey === 'your_openai_api_key_here') {
+    throw new Error('OpenAI API key is not configured. Please set OPENAI_API_KEY in server/.env');
+  }
+  return new OpenAI({ apiKey });
+};
+
+// OpenAI has no daily free-tier quota shape equivalent to Gemini's
+// RESOURCE_EXHAUSTED/PerDay — its 429s (insufficient_quota, rate_limit
+// exceeded) are billing/plan-level, not a short daily allowance, and are
+// not resolved by an immediate retry either. Kept as its own predicate
+// (rather than folded into isTransientError) so the "do not waste a retry
+// on a hard, non-recoverable-by-retry failure" distinction from Gate 10
+// still applies, and so generateJSON can still report a clean, honest
+// message for this specific case.
+export const isHardQuotaExhaustion = (err) => {
+  const code = err?.code || err?.error?.code;
+  if (code === 'insufficient_quota') return true;
+  const message = String(err?.message || '');
+  return /insufficient_quota/i.test(message);
+};
+
+// Identifies transient, retry-worthy failures: HTTP 429 (rate limit, but
+// not insufficient_quota — see isHardQuotaExhaustion above) or 5xx from the
+// OpenAI API, or common network-level errors. Everything else (malformed
+// JSON, invalid API key, 400s, etc.) is not retried.
+// Exported for unit testing only; not used outside this module otherwise.
+export const isTransientError = (err) => {
+  if (isHardQuotaExhaustion(err)) return false;
+
+  const status = err?.status ?? err?.code;
+  if (status === 429) return true;
+  if (typeof status === 'number' && status >= 500 && status < 600) return true;
+
+  const message = String(err?.message || '');
+  if (/"code":\s*429|rate_limit_exceeded/i.test(message)) return true;
+  if (/"code":\s*50[0-9]/.test(message)) return true;
+
+  const networkCodes = ['ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'ECONNREFUSED'];
+  if (networkCodes.includes(err?.code)) return true;
+
+  return false;
+};
+
+// Runs fn once, and retries exactly one more time if the failure looks
+// transient (429/5xx/network, but not hard quota exhaustion). No infinite
+// retries, no retry for non-transient failures (e.g. malformed JSON, bad
+// API key, or insufficient_quota).
+// Exported for unit testing only; not used outside this module otherwise.
+export const withSingleRetry = async (fn) => {
+  try {
+    return await fn();
+  } catch (err) {
+    if (!isTransientError(err)) throw err;
+    return await fn();
+  }
 };
 
 const generateJSON = async (prompt) => {
-  const model = getModel();
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-  return parseAIJSON(text);
+  let text;
+  try {
+    const client = getClient();
+    const completion = await withSingleRetry(() =>
+      client.chat.completions.create({
+        model: OPENAI_MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+      })
+    );
+    text = completion.choices?.[0]?.message?.content;
+  } catch (err) {
+    console.error('[aiService] OpenAI request failed:', err);
+    // A hard quota/billing failure will not resolve by retrying moments
+    // later (unlike a transient 429/5xx), so tell the user that plainly
+    // instead of implying a quick retry will help.
+    const message = isHardQuotaExhaustion(err)
+      ? 'The AI service is currently unavailable due to usage limits. Please try again later.'
+      : 'The AI service is temporarily unavailable. Please try again in a moment.';
+    throw new AIServiceError(message, { cause: err });
+  }
+
+  try {
+    return parseAIJSON(text);
+  } catch (err) {
+    console.error('[aiService] Failed to parse OpenAI response as JSON:', err, '\nRaw response:', text);
+    throw new AIServiceError(
+      'The AI service returned an unexpected response. Please try again.',
+      { cause: err }
+    );
+  }
 };
 
 const PROMPTS = {
@@ -211,9 +302,44 @@ export const analyzeResume = async (resumeText) => {
   return generateJSON(PROMPTS.resumeAnalysis(resumeText));
 };
 
+const isValidQuestion = (q) =>
+  q &&
+  typeof q.question === 'string' &&
+  q.question.trim().length > 0 &&
+  typeof q.category === 'string' &&
+  q.category.trim().length > 0 &&
+  typeof q.difficulty === 'string' &&
+  q.difficulty.trim().length > 0;
+
+// Validates the shape of a parsed interviewGeneration response. Returns the
+// questions array on success, or throws a safe AIServiceError describing
+// why the response was rejected. Exported for unit testing only.
+export const validateQuestionsResponse = (result) => {
+  const questions = result?.questions;
+
+  if (!Array.isArray(questions) || questions.length === 0) {
+    throw new AIServiceError(
+      'The AI service could not generate interview questions. Please try again.'
+    );
+  }
+
+  if (!questions.every(isValidQuestion)) {
+    throw new AIServiceError(
+      'The AI service returned an incomplete set of questions. Please try again.'
+    );
+  }
+
+  return questions;
+};
+
 export const generateInterviewQuestions = async (context) => {
   const result = await generateJSON(PROMPTS.interviewGeneration(context));
-  return result.questions || [];
+  try {
+    return validateQuestionsResponse(result);
+  } catch (err) {
+    console.error('[aiService] Rejected invalid interview questions response. Raw result:', result);
+    throw err;
+  }
 };
 
 export const evaluateAnswer = async (question, answer, category) => {

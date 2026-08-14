@@ -1,7 +1,13 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-const getJwtSecret = () => process.env.JWT_SECRET || 'super_secret_interview_coach_jwt_key_2026';
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not configured. Please set JWT_SECRET in server/.env');
+  }
+  return secret;
+};
 
 export const protect = async (req, res, next) => {
   let token;

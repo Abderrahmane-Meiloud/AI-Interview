@@ -3,7 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import React from 'react';
-import { MailIcon, LockIcon, UserIcon, EyeIcon, EyeOffIcon, SparklesIcon, RobotIcon, ArrowRightIcon, SpinnerIcon, CheckIcon } from '../components/Icons';
+import { MailIcon, LockIcon, UserIcon, EyeIcon, EyeOffIcon, ArrowRightIcon, SpinnerIcon, CheckCircleIcon } from '../components/Icons';
+
+const highlights = [
+  'Resume-aware questions tailored to your target role',
+  'Instant, structured feedback after every answer',
+  'A 7-day improvement plan built from your results',
+];
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -15,7 +21,6 @@ const Signup = () => {
   const { signup } = useAuth();
   const navigate = useNavigate();
 
-  // Password strength calculation
   const strength = useMemo(() => {
     let score = 0;
     if (password.length >= 6) score += 1;
@@ -26,7 +31,7 @@ const Signup = () => {
   }, [password]);
 
   const strengthLabels = ['Too weak', 'Weak', 'Fair', 'Good', 'Strong'];
-  const strengthColors = ['bg-slate-200', 'bg-rose-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500'];
+  const strengthColors = ['bg-line', 'bg-danger-500', 'bg-warning-500', 'bg-primary-500', 'bg-success-600'];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +54,7 @@ const Signup = () => {
     setLoading(true);
     try {
       const data = await signup(name.trim(), email.trim(), password);
-      toast.success(`Account created successfully! Welcome, ${data.name || 'Candidate'} 🎉`);
+      toast.success(`Account created successfully! Welcome, ${data.name || 'Candidate'}`);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.message || 'Registration failed. Please try again.';
@@ -60,189 +65,140 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-100 relative overflow-hidden">
-      {/* Background Glowing Orbs */}
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-600/20 rounded-full blur-3xl pointer-events-none animate-pulse-subtle" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[550px] h-[550px] bg-indigo-600/20 rounded-full blur-3xl pointer-events-none animate-pulse-subtle" />
+    <div className="min-h-screen flex items-center justify-center bg-app px-4 py-12">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 rounded-card border border-line shadow-card overflow-hidden bg-white">
+        <div className="hidden lg:flex flex-col justify-center bg-primary-50 px-10 py-12 border-r border-line">
+          <span className="font-mono text-[11px] font-semibold tracking-wide uppercase text-primary-700">
+            Interview Coach
+          </span>
+          <h2 className="font-display text-3xl font-semibold text-ink mt-3 leading-tight">
+            Start preparing with a clear plan.
+          </h2>
+          <p className="text-sm text-ink-soft mt-3 max-w-sm">
+            Upload your resume, set your target role, and practice interviews built around your real experience.
+          </p>
+          <ul className="mt-8 space-y-3">
+            {highlights.map((item) => (
+              <li key={item} className="flex items-start gap-2.5 text-sm text-ink-soft">
+                <CheckCircleIcon className="w-[18px] h-[18px] text-primary-600 flex-shrink-0 mt-0.5" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center p-4 sm:p-6 lg:p-12 gap-8 z-10">
-        
-        {/* Left Side: Brand Showcase */}
-        <div className="hidden lg:flex flex-1 flex-col justify-center max-w-lg space-y-8 pr-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-500/10 border border-primary-400/20 text-primary-300 text-sm font-medium w-fit shadow-inner">
-            <SparklesIcon className="w-4 h-4 text-primary-400" />
-            <span>AI Interview Coach 2.0</span>
+        <div className="px-6 py-10 sm:px-10 sm:py-12">
+          <div className="mb-8">
+            <h1 className="font-display text-2xl font-semibold text-ink">Create your account</h1>
+            <p className="text-sm text-ink-soft mt-1.5">Start preparing for your next interview</p>
           </div>
 
-          <div className="space-y-4">
-            <h1 className="text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight">
-              Start your journey to <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary-400 via-indigo-300 to-purple-400">your dream job</span>
-            </h1>
-            <p className="text-slate-300 text-base leading-relaxed">
-              Join thousands of developers using AI-powered interview feedback to land high-paying software engineering roles.
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="label">Full Name</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-faint">
+                  <UserIcon className="w-5 h-5" />
+                </div>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input-field pl-10"
+                  placeholder="Alex Morgan"
+                  autoComplete="name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Email Address</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-faint">
+                  <MailIcon className="w-5 h-5" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input-field pl-10"
+                  placeholder="alex@example.com"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-faint">
+                  <LockIcon className="w-5 h-5" />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-field pl-10 pr-11"
+                  placeholder="Min. 6 characters"
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-ink-faint hover:text-ink-soft transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                </button>
+              </div>
+
+              {password.length > 0 && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-ink-faint">Strength</span>
+                    <span className="font-medium text-ink-soft">{strengthLabels[strength]}</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5 h-1.5">
+                    {[1, 2, 3, 4].map((step) => (
+                      <div
+                        key={step}
+                        className={`rounded-full transition-all duration-300 ${
+                          strength >= step ? strengthColors[strength] : 'bg-line'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-2">
+              {loading ? (
+                <>
+                  <SpinnerIcon className="w-5 h-5" />
+                  <span>Creating account...</span>
+                </>
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRightIcon className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-line text-center">
+            <p className="text-sm text-ink-soft">
+              Already have an account?{' '}
+              <Link to="/login" className="font-semibold text-primary-700 hover:underline">
+                Sign in
+              </Link>
             </p>
           </div>
-
-          {/* Benefits list */}
-          <div className="space-y-3.5 pt-2">
-            {[
-              'Automatic resume parsing & skill extraction (PDF/DOCX)',
-              '10 customized mock interview questions generated by Gemini AI',
-              'Instant answer evaluation with actionable technical feedback',
-              'Custom 7-day targeted study & improvement roadmap',
-            ].map((benefit, idx) => (
-              <div key={idx} className="flex items-start gap-3 text-sm text-slate-200">
-                <div className="mt-0.5 p-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  <CheckIcon className="w-3.5 h-3.5" />
-                </div>
-                <span>{benefit}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-4 border-t border-white/10 flex items-center gap-4 text-xs text-slate-400">
-            <span>🔒 Secure JWT Auth</span>
-            <span>⚡ Gemini Pro Engine</span>
-            <span>📊 Detailed Analytics</span>
-          </div>
         </div>
-
-        {/* Right Side: Signup Form Card */}
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 border border-slate-100 text-slate-800">
-            
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary-600 to-indigo-600 text-white shadow-lg shadow-primary-500/30 mb-4">
-                <RobotIcon className="w-7 h-7" />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Create your account</h2>
-              <p className="text-sm text-slate-500 mt-1.5">Free forever interview simulations</p>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <UserIcon className="w-5 h-5" />
-                  </div>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none text-sm transition-all"
-                    placeholder="Alex Morgan"
-                    autoComplete="name"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <MailIcon className="w-5 h-5" />
-                  </div>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none text-sm transition-all"
-                    placeholder="alex@example.com"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                    <LockIcon className="w-5 h-5" />
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none text-sm transition-all"
-                    placeholder="Min. 6 characters"
-                    autoComplete="new-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-                  </button>
-                </div>
-
-                {/* Password strength meter */}
-                {password.length > 0 && (
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-slate-500">Strength</span>
-                      <span className="font-medium text-slate-700">{strengthLabels[strength]}</span>
-                    </div>
-                    <div className="grid grid-cols-4 gap-1.5 h-1.5">
-                      {[1, 2, 3, 4].map((step) => (
-                        <div
-                          key={step}
-                          className={`rounded-full transition-all duration-300 ${
-                            strength >= step ? strengthColors[strength] : 'bg-slate-200'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 shadow-md shadow-primary-500/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
-              >
-                {loading ? (
-                  <>
-                    <SpinnerIcon className="w-5 h-5" />
-                    <span>Creating account...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Create Account</span>
-                    <ArrowRightIcon className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Footer / Switch to Login */}
-            <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-              <p className="text-sm text-slate-600">
-                Already have an account?{' '}
-                <Link
-                  to="/login"
-                  className="font-semibold text-primary-600 hover:text-primary-700 hover:underline transition-colors"
-                >
-                  Sign in
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   );

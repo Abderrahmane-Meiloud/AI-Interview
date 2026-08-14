@@ -17,6 +17,14 @@ export const errorHandler = (err, req, res, next) => {
     return res.status(400).json({ message: 'Invalid ID format' });
   }
 
+  // AI service errors already carry a safe, user-facing message. Never
+  // include the raw provider error/stack (which may contain API/quota
+  // internals) in the client response; full detail was already logged
+  // server-side when the error was raised.
+  if (err.isAIServiceError) {
+    return res.status(statusCode).json({ message: err.message });
+  }
+
   res.status(statusCode).json({
     message: err.message || 'Server Error',
     stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,

@@ -4,8 +4,9 @@ import toast from 'react-hot-toast';
 import { interviewAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProgressBar from '../components/ProgressBar';
+import AIThinking from '../components/AIThinking';
 import React from 'react';
-
+import { CheckCircleIcon, AlertTriangleIcon, ArrowRightIcon } from '../components/Icons';
 
 const categoryLabels = {
   technical: 'Technical',
@@ -13,6 +14,15 @@ const categoryLabels = {
   dsa: 'DSA / Problem Solving',
   hr: 'HR / Behavioral',
 };
+
+const EVALUATION_STEPS = [
+  'Reading your answer…',
+  'Evaluating technical depth…',
+  'Checking communication clarity…',
+  'Preparing feedback…',
+];
+
+const IN_PROGRESS_KEY = 'inProgressInterviewId';
 
 const Interview = () => {
   const { id } = useParams();
@@ -37,6 +47,7 @@ const Interview = () => {
       setQuestionNumber(data.questionNumber);
       setTotalQuestions(data.totalQuestions);
     } catch {
+      localStorage.removeItem(IN_PROGRESS_KEY);
       toast.error('Failed to load interview');
       navigate('/dashboard');
     } finally {
@@ -58,6 +69,7 @@ const Interview = () => {
 
       if (data.isComplete) {
         await interviewAPI.complete(id);
+        localStorage.removeItem(IN_PROGRESS_KEY);
         setTimeout(() => navigate(`/interview/${id}/result`), 2000);
       }
     } catch (err) {
@@ -76,18 +88,18 @@ const Interview = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-app">
         <LoadingSpinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-4 py-4">
+    <div className="min-h-screen bg-app">
+      <header className="bg-white border-b border-line px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-900">AI Interview</h1>
-          <span className="text-sm text-gray-500">
+          <h1 className="font-display text-lg font-semibold text-ink">AI Interview</h1>
+          <span className="text-sm text-ink-faint font-mono">
             Question {questionNumber} / {totalQuestions}
           </span>
         </div>
@@ -103,59 +115,69 @@ const Interview = () => {
 
       <main className="max-w-3xl mx-auto p-4 md:p-8">
         {!showFeedback ? (
-          <div className="card space-y-6">
-            <div>
-              <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2.5 py-1 rounded-full">
-                {categoryLabels[question?.category] || question?.category}
-              </span>
-              <span className="text-xs text-gray-400 ml-2 capitalize">
-                {question?.difficulty}
-              </span>
+          submitting ? (
+            <div className="card">
+              <AIThinking steps={EVALUATION_STEPS} />
             </div>
+          ) : (
+            <div className="card space-y-6">
+              <div className="flex items-center gap-2">
+                <span className="badge badge-primary">
+                  {categoryLabels[question?.category] || question?.category}
+                </span>
+                <span className="text-xs text-ink-faint capitalize">
+                  {question?.difficulty}
+                </span>
+              </div>
 
-            <h2 className="text-xl font-medium text-gray-900 leading-relaxed">
-              {question?.question}
-            </h2>
+              <h2 className="text-xl font-medium text-ink leading-relaxed">
+                {question?.question}
+              </h2>
 
-            <div>
-              <label className="label">Your Answer</label>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                className="input-field min-h-[200px] resize-y"
-                placeholder="Type your answer here..."
-                disabled={submitting}
-              />
+              <div>
+                <label className="label">Your Answer</label>
+                <textarea
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  className="input-field min-h-[200px] resize-y"
+                  placeholder="Type your answer here..."
+                  disabled={submitting}
+                />
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                disabled={submitting || !answer.trim()}
+                className="btn-primary w-full py-3"
+              >
+                Submit Answer
+              </button>
             </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={submitting || !answer.trim()}
-              className="btn-primary w-full py-3"
-            >
-              {submitting ? 'Evaluating with AI...' : 'Submit Answer'}
-            </button>
-          </div>
+          )
         ) : (
           <div className="space-y-6">
             <div className="card">
-              <h3 className="text-lg font-semibold mb-4">Answer Evaluation</h3>
+              <h3 className="text-base font-semibold text-ink mb-4">Answer Evaluation</h3>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                 <ScoreItem label="Overall" score={evaluation?.score} />
                 <ScoreItem label="Correctness" score={evaluation?.correctness} />
                 <ScoreItem label="Technical" score={evaluation?.technicalKnowledge} />
                 <ScoreItem label="Communication" score={evaluation?.communication} />
+                <ScoreItem label="Problem Solving" score={evaluation?.problemSolving} />
               </div>
 
-              <p className="text-gray-700 mb-4">{evaluation?.feedback}</p>
+              <p className="text-sm text-ink-soft mb-4">{evaluation?.feedback}</p>
 
               {evaluation?.strengths?.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-sm font-medium text-green-700 mb-1">Strengths</p>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                  <p className="text-sm font-semibold text-success-700 mb-1.5">Strengths</p>
+                  <ul className="space-y-1.5">
                     {evaluation.strengths.map((s, i) => (
-                      <li key={i}>✓ {s}</li>
+                      <li key={i} className="flex items-start gap-2 text-sm text-ink-soft">
+                        <CheckCircleIcon className="w-4 h-4 text-success-600 flex-shrink-0 mt-0.5" />
+                        <span>{s}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -163,10 +185,13 @@ const Interview = () => {
 
               {evaluation?.improvements?.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-yellow-700 mb-1">Improvements</p>
-                  <ul className="text-sm text-gray-600 space-y-1">
+                  <p className="text-sm font-semibold text-warning-600 mb-1.5">Improvements</p>
+                  <ul className="space-y-1.5">
                     {evaluation.improvements.map((imp, i) => (
-                      <li key={i}>→ {imp}</li>
+                      <li key={i} className="flex items-start gap-2 text-sm text-ink-soft">
+                        <AlertTriangleIcon className="w-4 h-4 text-warning-500 flex-shrink-0 mt-0.5" />
+                        <span>{imp}</span>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -175,12 +200,14 @@ const Interview = () => {
 
             {questionNumber < totalQuestions ? (
               <button onClick={handleNext} className="btn-primary w-full py-3">
-                Next Question →
+                <span>Next Question</span>
+                <ArrowRightIcon className="w-4 h-4" />
               </button>
             ) : (
-              <div className="card text-center">
-                <LoadingSpinner />
-                <p className="text-gray-600 mt-3">Generating final results...</p>
+              <div className="card">
+                <AIThinking
+                  steps={['Calculating final scores…', 'Preparing your feedback…']}
+                />
               </div>
             )}
           </div>
@@ -191,9 +218,9 @@ const Interview = () => {
 };
 
 const ScoreItem = ({ label, score }) => (
-  <div className="text-center p-3 bg-gray-50 rounded-lg">
-    <p className="text-2xl font-bold text-primary-600">{score ?? '—'}/10</p>
-    <p className="text-xs text-gray-500 mt-1">{label}</p>
+  <div className="text-center p-3 bg-app rounded-lg border border-line">
+    <p className="font-display text-2xl font-semibold text-primary-700">{score ?? '—'}<span className="text-sm text-ink-faint">/10</span></p>
+    <p className="text-xs text-ink-faint mt-1">{label}</p>
   </div>
 );
 

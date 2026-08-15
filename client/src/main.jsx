@@ -11,7 +11,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <AuthProvider>
         <App />
-        <Toaster position="top-right" />
+        <Toaster
+          position="top-right"
+          containerStyle={{
+            top: 'max(1rem, env(safe-area-inset-top))',
+          }}
+          toastOptions={{
+            className: 'max-md:!mt-[104px]',
+          }}
+        />
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

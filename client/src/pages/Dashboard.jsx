@@ -18,20 +18,16 @@ const GENERATION_STEPS = [
   'Finalizing your interview…',
 ];
 
-const IN_PROGRESS_KEY = 'inProgressInterviewId';
-
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [inProgress, setInProgress] = useState(null);
-  const [checkingInProgress, setCheckingInProgress] = useState(true);
+  const [showReplaceWarning, setShowReplaceWarning] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchDashboard();
-    checkInProgressInterview();
   }, []);
 
   const fetchDashboard = async () => {
@@ -45,21 +41,7 @@ const Dashboard = () => {
     }
   };
 
-  const checkInProgressInterview = async () => {
-    const savedId = localStorage.getItem(IN_PROGRESS_KEY);
-    if (!savedId) {
-      setCheckingInProgress(false);
-      return;
-    }
-    try {
-      const { data: current } = await interviewAPI.getCurrent(savedId);
-      setInProgress({ id: savedId, ...current });
-    } catch {
-      localStorage.removeItem(IN_PROGRESS_KEY);
-    } finally {
-      setCheckingInProgress(false);
-    }
-  };
+  const inProgress = data?.inProgressInterview || null;
 
   const openConfirm = () => {
     if (data?.resumeStatus !== 'uploaded') {
@@ -72,6 +54,10 @@ const Dashboard = () => {
       navigate('/job-profile');
       return;
     }
+    if (inProgress) {
+      setShowReplaceWarning(true);
+      return;
+    }
     setShowConfirm(true);
   };
 
@@ -79,7 +65,6 @@ const Dashboard = () => {
     setStarting(true);
     try {
       const { data: interview } = await interviewAPI.start();
-      localStorage.setItem(IN_PROGRESS_KEY, interview.interviewId);
       navigate(`/interview/${interview.interviewId}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to start interview');
@@ -98,7 +83,7 @@ const Dashboard = () => {
         <p className="text-sm text-ink-soft mt-1">Here&apos;s your interview preparation overview</p>
       </div>
 
-      {!checkingInProgress && inProgress && (
+      {inProgress && (
         <div className="card border-primary-100 bg-primary-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-primary-800">
@@ -120,7 +105,7 @@ const Dashboard = () => {
             </div>
           </div>
           <button
-            onClick={() => navigate(`/interview/${inProgress.id}`)}
+            onClick={() => navigate(`/interview/${inProgress.interviewId}`)}
             className="btn-primary px-5 py-2.5 whitespace-nowrap"
           >
             Resume Interview
@@ -175,19 +160,37 @@ const Dashboard = () => {
           </p>
 
           <div className="flex flex-wrap gap-3 mt-6">
-            <button
-              onClick={openConfirm}
-              disabled={starting || !!inProgress}
-              className="btn-primary px-6 py-2.5"
-            >
-              {inProgress ? 'Finish current interview first' : 'Start New Interview'}
-            </button>
+            {inProgress ? (
+              <button
+                onClick={() => navigate(`/interview/${inProgress.interviewId}`)}
+                className="btn-primary px-6 py-2.5"
+              >
+                Resume Interview
+              </button>
+            ) : (
+              <button
+                onClick={openConfirm}
+                disabled={starting}
+                className="btn-primary px-6 py-2.5"
+              >
+                Start New Interview
+              </button>
+            )}
             <button
               onClick={() => navigate('/resume')}
               className="btn-secondary px-6 py-2.5"
             >
               Upload Resume
             </button>
+            {inProgress && (
+              <button
+                onClick={openConfirm}
+                disabled={starting}
+                className="text-sm text-ink-soft hover:underline px-2 py-2.5"
+              >
+                Start a different interview instead
+              </button>
+            )}
           </div>
         </div>
 
@@ -221,6 +224,46 @@ const Dashboard = () => {
             </button>
           }
         />
+      )}
+
+      {showReplaceWarning && (
+        <div className="fixed inset-0 bg-ink/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-card shadow-card max-w-md w-full p-6 sm:p-8">
+            <h2 className="font-display text-xl font-semibold text-ink">
+              Start a different interview?
+            </h2>
+            <p className="text-sm text-ink-soft mt-2">
+              You still have an interview in progress
+              {inProgress?.answeredQuestions != null && ` with ${inProgress.answeredQuestions} answer${inProgress.answeredQuestions === 1 ? '' : 's'} recorded`}.
+              Starting a new one will not delete it, but you&apos;ll leave it unfinished and won&apos;t be able to resume it from here afterwards.
+            </p>
+            <div className="flex flex-wrap gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowReplaceWarning(false);
+                  setShowConfirm(true);
+                }}
+                className="btn-primary px-6 py-2.5"
+              >
+                Start New Interview Anyway
+              </button>
+              <button
+                onClick={() => setShowReplaceWarning(false)}
+                className="btn-secondary px-6 py-2.5"
+              >
+                Cancel
+              </button>
+              {inProgress && (
+                <button
+                  onClick={() => navigate(`/interview/${inProgress.interviewId}`)}
+                  className="text-sm text-primary-700 hover:underline px-2 py-2.5 ml-auto"
+                >
+                  Resume Existing Interview
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {showConfirm && (

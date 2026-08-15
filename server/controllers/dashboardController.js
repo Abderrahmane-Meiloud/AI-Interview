@@ -4,16 +4,20 @@ import Interview from '../models/Interview.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
 export const getDashboard = asyncHandler(async (req, res) => {
-  const [resume, jobProfile, latestInterview, allInterviews] = await Promise.all([
-    Resume.findOne({ userId: req.user._id }),
-    JobProfile.findOne({ userId: req.user._id }),
-    Interview.findOne({ userId: req.user._id, status: 'completed' }).sort({
-      createdAt: -1,
-    }),
-    Interview.find({ userId: req.user._id, status: 'completed' }).sort({
-      createdAt: -1,
-    }),
-  ]);
+  const [resume, jobProfile, latestInterview, allInterviews, inProgressInterview] =
+    await Promise.all([
+      Resume.findOne({ userId: req.user._id }),
+      JobProfile.findOne({ userId: req.user._id }),
+      Interview.findOne({ userId: req.user._id, status: 'completed' }).sort({
+        createdAt: -1,
+      }),
+      Interview.find({ userId: req.user._id, status: 'completed' }).sort({
+        createdAt: -1,
+      }),
+      Interview.findOne({ userId: req.user._id, status: 'in_progress' }).sort({
+        createdAt: -1,
+      }),
+    ]);
 
   const avgScore =
     allInterviews.length > 0
@@ -37,6 +41,14 @@ export const getDashboard = asyncHandler(async (req, res) => {
     interviewReadiness: avgScore || (resume && jobProfile ? 50 : 0),
     areasToImprove,
     totalInterviews: allInterviews.length,
+    inProgressInterview: inProgressInterview
+      ? {
+          interviewId: inProgressInterview._id,
+          totalQuestions: inProgressInterview.totalQuestions,
+          questionNumber: inProgressInterview.currentQuestionIndex + 1,
+          answeredQuestions: inProgressInterview.questions.filter((q) => q.answer).length,
+        }
+      : null,
   });
 });
 

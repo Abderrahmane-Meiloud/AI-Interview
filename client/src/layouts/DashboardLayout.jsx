@@ -99,7 +99,7 @@ const DashboardLayout = ({ children }) => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 md:ml-64 flex flex-col min-h-screen min-w-0">
         {/* Mobile Header */}
         <header className="md:hidden bg-white border-b border-line px-4 h-14 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-2.5">

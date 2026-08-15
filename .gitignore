@@ -62,3 +62,6 @@ coverage
 
 .vercel
 .env*
+
+# Local test-only resume sample (never commit real personal documents)
+CV_Abderrahmane_Meiloud.pdf

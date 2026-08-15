@@ -12,7 +12,24 @@ export default async function handler(req, res) {
   try {
     await connectDB();
   } catch (error) {
-    console.error(`[api] MongoDB connection failed: ${error.message}`);
+    let serverErrors = 'n/a';
+    try {
+      const servers = error?.reason?.servers;
+      if (servers instanceof Map) {
+        serverErrors = JSON.stringify(
+          [...servers.entries()].map(([addr, desc]) => ({
+            addr,
+            type: desc.type,
+            error: desc.error ? { name: desc.error.name, message: desc.error.message, code: desc.error.code } : undefined,
+          }))
+        );
+      }
+    } catch {
+      serverErrors = 'failed to extract';
+    }
+    console.error(
+      `[api] MongoDB connection failed: ${error.message} | name: ${error.name} | servers: ${serverErrors}`
+    );
     res.status(503).json({ message: 'Service temporarily unavailable. Please try again shortly.' });
     return;
   }

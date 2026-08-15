@@ -33,8 +33,12 @@ const connectDB = async () => {
   }
   if (!connectionPromise) {
     const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/interview_coach';
+    // Node 17+ resolves DNS as IPv6-first by default, which is a known
+    // source of Atlas connection failures on some serverless networks.
+    // Forcing IPv4 rules that class of issue out; Atlas is fully reachable
+    // over IPv4, so this has no functional downside either way.
     connectionPromise = mongoose
-      .connect(mongoURI)
+      .connect(mongoURI, { family: 4 })
       .then((conn) => {
         console.log(`MongoDB Connected: ${conn.connection.host}`);
         return conn.connection;
